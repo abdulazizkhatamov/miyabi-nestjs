@@ -1,10 +1,20 @@
 import { Module } from '@nestjs/common';
-import { AdminServerController } from './admin-server.controller';
-import { AdminServerService } from './admin-server.service';
+import { AuthModule } from './auth/auth.module';
+import { CsrfModule } from './csrf/csrf.module';
+import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from '@app/common';
 
 @Module({
-  imports: [],
-  controllers: [AdminServerController],
-  providers: [AdminServerService],
+  imports: [
+    ConfigModule.forRoot({
+      envFilePath: '.env',
+      isGlobal: true,
+    }),
+    PrismaModule,
+    AuthModule,
+    CsrfModule,
+  ],
+  controllers: [],
+  providers: [],
 })
 export class AdminServerModule {}
