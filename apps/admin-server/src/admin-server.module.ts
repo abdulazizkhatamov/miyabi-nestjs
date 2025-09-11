@@ -3,6 +3,7 @@ import { AuthModule } from './auth/auth.module';
 import { CsrfModule } from './csrf/csrf.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from '@app/common';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { PrismaModule } from '@app/common';
     PrismaModule,
     AuthModule,
     CsrfModule,
+    CategoriesModule,
   ],
   controllers: [],
   providers: [],

@@ -18,6 +18,7 @@ async function bootstrap() {
   const port = Number(config.getOrThrow<string>('ADMIN_SERVER_PORT'));
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.setGlobalPrefix('api');
   app.use(cookieParser());
 
   // Sessions (unchanged)
