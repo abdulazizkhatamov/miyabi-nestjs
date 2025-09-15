@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateCategoryDto {
   @ApiProperty({
@@ -10,10 +10,11 @@ export class CreateCategoryDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({
-    type: 'string',
-    format: 'binary',
-    description: 'Image file for the category',
+  @ApiPropertyOptional({
+    example: 'Category description',
+    description: 'Description of the category',
   })
-  image: any; // validation handled in controller
+  @IsString()
+  @IsOptional()
+  description?: string;
 }

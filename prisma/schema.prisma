@@ -22,6 +22,11 @@ enum OrderStatus {
   canceled
 }
 
+enum ImageType {
+  category
+  product
+}
+
 // MODELS //
 model Admin {
   id         String   @id @default(uuid())
@@ -55,15 +60,16 @@ model Address {
 }
 
 model Category {
-  id         String   @id @default(uuid())
-  slug       String   @unique
-  name       String
-  image      String
-  status     Boolean  @default(true)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  name        String
+  description String?
+  status      Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
   products Product[]
+  images   Image[]
 }
 
 model Product {
@@ -72,7 +78,6 @@ model Product {
   name        String
   description String
   weight      Int
-  image       String
   price       Decimal  @db.Decimal(10, 2) // consistent, precise
   status      Boolean  @default(true)
   created_at  DateTime @default(now())
@@ -82,6 +87,7 @@ model Product {
   category_id String?
 
   order_items OrderItem[]
+  images      Image[]
 }
 
 model Order {
@@ -112,4 +118,19 @@ model OrderItem {
 
   product    Product @relation(fields: [product_id], references: [id])
   product_id String
+}
+
+model Image {
+  id         String    @id @default(uuid())
+  path       String
+  type       ImageType
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  // Relations
+  product    Product? @relation(fields: [product_id], references: [id])
+  product_id String?
+
+  category    Category? @relation(fields: [category_id], references: [id])
+  category_id String?
 }

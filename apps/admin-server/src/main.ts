@@ -8,7 +8,7 @@ import { RedisStore } from 'connect-redis';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import {
   connectRedis,
-  csrfSynchronisedProtection,
+  // csrfSynchronisedProtection,
   parseBoolean,
 } from '@app/common';
 
@@ -64,7 +64,7 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   });
 
-  app.use(csrfSynchronisedProtection);
+  // app.use(csrfSynchronisedProtection);
 
   const documentConfig = new DocumentBuilder()
     .setTitle('Miyabi House Admin Api')

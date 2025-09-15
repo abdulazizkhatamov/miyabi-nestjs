@@ -2,82 +2,93 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { generateUniqueSlug, PrismaService } from '@app/common';
-import * as path from 'path';
-import * as fs from 'fs';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CategoriesService {
   constructor(private prisma: PrismaService) {}
 
-  async create(
-    createCategoryDto: CreateCategoryDto,
-    image: Express.Multer.File,
-  ) {
-    const { name } = createCategoryDto;
+  async create(createCategoryDto: CreateCategoryDto) {
+    const { name, description } = createCategoryDto;
 
     // generate unique slug
     const slug = await generateUniqueSlug(this.prisma, 'category', name);
-
-    // image.path already contains the full disk path
-    // store relative path in DB
-    const filePath = `/uploads/${image.filename}`;
 
     // save in DB
     const category = await this.prisma.category.create({
       data: {
         name,
+        description,
         slug,
-        image: filePath,
       },
     });
 
     return category;
   }
 
-  findAll() {
-    return this.prisma.category.findMany();
+  async findAll(params: {
+    page?: number;
+    pageSize?: number;
+    where?: Prisma.CategoryWhereInput;
+    orderBy?: Prisma.CategoryOrderByWithRelationInput;
+  }) {
+    const { page = 1, pageSize = 10, where, orderBy } = params;
+
+    const skip = (page - 1) * pageSize;
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.category.findMany({
+        skip,
+        take: pageSize,
+        where,
+        orderBy,
+      }),
+      this.prisma.category.count({ where }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        pageSize,
+        pageCount: Math.ceil(total / pageSize),
+      },
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} category`;
+  async findOne(id: string) {
+    const category = await this.prisma.category.findUnique({
+      where: { id },
+    });
+
+    if (!category) {
+      throw new NotFoundException(`Category with ID ${id} not found`);
+    }
+
+    return category;
   }
 
-  async update(
-    id: string,
-    updateCategoryDto: UpdateCategoryDto,
-    image?: Express.Multer.File,
-  ) {
+  async update(id: string, updateCategoryDto: UpdateCategoryDto) {
     const existingCategory = await this.prisma.category.findUnique({
       where: { id },
     });
     if (!existingCategory) throw new NotFoundException('Category not found');
 
-    const { name, status } = updateCategoryDto;
+    const { name, description, status } = updateCategoryDto;
 
     let slug = existingCategory.slug;
     if (name && name !== existingCategory.name) {
       slug = await generateUniqueSlug(this.prisma, 'category', name);
     }
 
-    let filePath = existingCategory.image;
-    if (image) {
-      const oldImagePath = path.join(
-        process.cwd(),
-        'public',
-        existingCategory.image,
-      );
-      if (fs.existsSync(oldImagePath)) fs.unlinkSync(oldImagePath);
-      filePath = `/uploads/${image.filename}`;
-    }
-
     const updatedCategory = await this.prisma.category.update({
       where: { id },
       data: {
         name: name ?? existingCategory.name,
+        description,
         slug,
-        status:
-          status !== undefined ? status === 'true' : existingCategory.status,
-        image: filePath,
+        status,
       },
     });
 
