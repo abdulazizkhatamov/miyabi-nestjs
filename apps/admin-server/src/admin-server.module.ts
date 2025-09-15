@@ -5,12 +5,21 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from '@app/common';
 import { CategoriesModule } from './categories/categories.module';
 import { ImagesModule } from './images/images.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: '.env',
       isGlobal: true,
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', '..', '..', 'public'),
+      exclude: ['/api*'],
+      serveStaticOptions: {
+        fallthrough: false,
+      },
     }),
     PrismaModule,
     AuthModule,

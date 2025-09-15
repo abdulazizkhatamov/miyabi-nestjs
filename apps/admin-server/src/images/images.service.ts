@@ -7,14 +7,23 @@ import { CreateImageDto } from './dto/create-image.dto';
 import { UpdateImageDto } from './dto/update-image.dto';
 import { PrismaService } from '@app/common';
 import { ImageType } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ImagesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private configService: ConfigService,
+  ) {}
 
   async create(createImageDto: CreateImageDto, image: Express.Multer.File) {
     const { type, entity_id } = createImageDto;
-    const filePath = `/uploads/${image.filename}`;
+
+    const baseUrl =
+      this.configService.get<string>('ADMIN_SERVER_URL') ??
+      'http://localhost:3001';
+    const filePath = `${baseUrl}/uploads/${image.filename}`;
+
     switch (type) {
       case ImageType.category: {
         const category = await this.prisma.category.findUnique({
@@ -27,7 +36,7 @@ export class ImagesService {
         return this.prisma.image.create({
           data: {
             path: filePath,
-            type, // already ImageType.category
+            type,
             category_id: entity_id,
           },
         });

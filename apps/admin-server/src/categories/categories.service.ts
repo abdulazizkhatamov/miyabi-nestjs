@@ -60,6 +60,7 @@ export class CategoriesService {
   async findOne(id: string) {
     const category = await this.prisma.category.findUnique({
       where: { id },
+      include: { images: true },
     });
 
     if (!category) {
