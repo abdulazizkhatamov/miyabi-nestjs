@@ -67,6 +67,6 @@ export class ImagesController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.imagesService.remove(+id);
+    return this.imagesService.remove(id);
   }
 }

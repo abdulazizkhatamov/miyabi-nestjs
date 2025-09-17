@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateImageDto } from './dto/create-image.dto';
@@ -8,6 +9,8 @@ import { UpdateImageDto } from './dto/update-image.dto';
 import { PrismaService } from '@app/common';
 import { ImageType } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class ImagesService {
@@ -76,7 +79,25 @@ export class ImagesService {
     return `This action updates a #${id} image`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} image`;
+  async remove(id: string) {
+    const image = await this.prisma.image.findUnique({ where: { id } });
+
+    if (!image) throw new NotFoundException('Image not found');
+
+    const filePath = path.join(
+      process.cwd(),
+      'public',
+      'uploads',
+      path.basename(image.path),
+    );
+
+    try {
+      await fs.promises.unlink(filePath);
+    } catch {
+      throw new InternalServerErrorException('Failed to delete image file');
+    }
+
+    // Delete record from DB
+    return this.prisma.image.delete({ where: { id } });
   }
 }
