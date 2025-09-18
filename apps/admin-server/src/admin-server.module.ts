@@ -7,6 +7,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { ImagesModule } from './images/images.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { join } from 'path';
     CsrfModule,
     CategoriesModule,
     ImagesModule,
+    ProductsModule,
   ],
   controllers: [],
   providers: [],

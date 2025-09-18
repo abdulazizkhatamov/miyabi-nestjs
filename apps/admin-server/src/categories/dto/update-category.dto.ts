@@ -1,13 +1,10 @@
-import { PartialType, ApiProperty } from '@nestjs/swagger';
+import { PartialType, ApiPropertyOptional } from '@nestjs/swagger';
 import { CreateCategoryDto } from './create-category.dto';
-import { IsBoolean } from 'class-validator';
+import { IsBoolean, IsOptional } from 'class-validator';
 
 export class UpdateCategoryDto extends PartialType(CreateCategoryDto) {
-  @ApiProperty({
-    example: true,
-    description: 'Category status: true=active, false=inactive',
-    required: false,
-  })
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
   @IsBoolean()
-  status: boolean; // ✅ boolean, optional
+  status?: boolean;
 }

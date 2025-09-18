@@ -84,7 +84,7 @@ model Product {
   updated_at  DateTime @updatedAt
 
   category    Category? @relation(fields: [category_id], references: [id])
-  category_id String?
+  category_id String
 
   order_items OrderItem[]
   images      Image[]

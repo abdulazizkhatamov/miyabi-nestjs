@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { generateUniqueSlug, PrismaService } from '@app/common';
-import { Prisma } from '@prisma/client';
+import { Category, Prisma } from '@prisma/client';
 
 @Injectable()
 export class CategoriesService {
@@ -71,6 +71,7 @@ export class CategoriesService {
   }
 
   async update(id: string, updateCategoryDto: UpdateCategoryDto) {
+    // Find existing category
     const existingCategory = await this.prisma.category.findUnique({
       where: { id },
     });
@@ -78,19 +79,19 @@ export class CategoriesService {
 
     const { name, description, status } = updateCategoryDto;
 
-    let slug = existingCategory.slug;
+    const data: Partial<Category> = {};
+
+    // Only update fields that exist in DTO
     if (name && name !== existingCategory.name) {
-      slug = await generateUniqueSlug(this.prisma, 'category', name);
+      data.name = name;
+      data.slug = await generateUniqueSlug(this.prisma, 'category', name);
     }
+    if (description !== undefined) data.description = description;
+    if (status !== undefined) data.status = status;
 
     const updatedCategory = await this.prisma.category.update({
       where: { id },
-      data: {
-        name: name ?? existingCategory.name,
-        description,
-        slug,
-        status,
-      },
+      data,
     });
 
     return updatedCategory;
