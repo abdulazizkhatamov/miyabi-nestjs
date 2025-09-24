@@ -8,6 +8,7 @@ import { ImagesModule } from './images/images.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ProductsModule } from './products/products.module';
+import { BannersModule } from './banners/banners.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ProductsModule } from './products/products.module';
     CategoriesModule,
     ImagesModule,
     ProductsModule,
+    BannersModule,
   ],
   controllers: [],
   providers: [],

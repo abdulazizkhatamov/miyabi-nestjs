@@ -25,6 +25,7 @@ enum OrderStatus {
 enum ImageType {
   category
   product
+  banner
 }
 
 // MODELS //
@@ -120,6 +121,15 @@ model OrderItem {
   product_id String
 }
 
+model Banner {
+  id         String   @id @default(uuid())
+  name       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  images Image[]
+}
+
 model Image {
   id         String    @id @default(uuid())
   path       String
@@ -133,4 +143,7 @@ model Image {
 
   category    Category? @relation(fields: [category_id], references: [id])
   category_id String?
+
+  banner    Banner? @relation(fields: [banner_id], references: [id])
+  banner_id String?
 }

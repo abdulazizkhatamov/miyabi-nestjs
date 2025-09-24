@@ -62,6 +62,19 @@ export class ImagesService {
         });
       }
 
+      case ImageType.banner: {
+        const banner = await this.prisma.banner.findUnique({
+          where: { id: entity_id },
+        });
+        if (!banner) {
+          throw new NotFoundException('Banner not found');
+        }
+
+        return this.prisma.image.create({
+          data: { path: filePath, type, banner_id: entity_id },
+        });
+      }
+
       default:
         throw new BadRequestException('Invalid image type');
     }
