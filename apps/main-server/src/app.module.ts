@@ -3,6 +3,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { BannersModule } from './banners/banners.module';
+import { PrismaModule } from '@app/common';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { join } from 'path';
         fallthrough: false,
       },
     }),
+    PrismaModule,
+    BannersModule,
   ],
   controllers: [],
   providers: [],
