@@ -1,6 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import * as argon2 from 'argon2';
 import * as dotenv from 'dotenv';
+import { faker } from '@faker-js/faker';
 
 dotenv.config();
 
@@ -24,22 +25,69 @@ async function main() {
     where: { email },
   });
 
-  if (existingAdmin) {
+  if (!existingAdmin) {
+    await prisma.admin.create({
+      data: {
+        first_name: 'Super',
+        last_name: 'Admin',
+        email,
+        password: hashedPassword,
+      },
+    });
+    console.log(`✅ Super admin created: ${email}`);
+  } else {
     console.log(`ℹ️ Admin with email ${email} already exists.`);
-    return;
   }
 
-  // create new super admin
-  await prisma.admin.create({
-    data: {
-      first_name: 'Super',
-      last_name: 'Admin',
-      email,
-      password: hashedPassword,
-    },
+  // --- Seed Categories ---
+  const categoriesCount = 20;
+  const categories = Array.from({ length: categoriesCount }).map(() => ({
+    id: faker.string.uuid(),
+    slug: faker.lorem.slug(),
+    name: faker.commerce.department(),
+    description: faker.commerce.productDescription(),
+    status: true,
+    created_at: new Date(),
+    updated_at: new Date(),
+  }));
+
+  await prisma.category.createMany({
+    data: categories,
+    skipDuplicates: true,
   });
 
-  console.log(`✅ Super admin created: ${email}`);
+  console.log(`✅ ${categoriesCount} categories created.`);
+
+  // Fetch categories back (for product assignment)
+  const dbCategories = await prisma.category.findMany();
+
+  // --- Seed Products ---
+  const productsCount = 100;
+  const products = Array.from({ length: productsCount }).map(() => {
+    const category =
+      dbCategories[Math.floor(Math.random() * dbCategories.length)];
+    return {
+      id: faker.string.uuid(),
+      slug: faker.lorem.slug(),
+      name: faker.commerce.productName(),
+      description: faker.commerce.productDescription(),
+      weight: faker.number.int({ min: 100, max: 2000 }),
+      price: new Prisma.Decimal(
+        faker.commerce.price({ min: 5, max: 500, dec: 2 }),
+      ),
+      status: true,
+      created_at: new Date(),
+      updated_at: new Date(),
+      category_id: category.id,
+    };
+  });
+
+  await prisma.product.createMany({
+    data: products,
+    skipDuplicates: true,
+  });
+
+  console.log(`✅ ${productsCount} products created.`);
 }
 
 main()
