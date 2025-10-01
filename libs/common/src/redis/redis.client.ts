@@ -1,6 +1,6 @@
-import { createClient } from 'redis';
+import { createClient, RedisClientType } from 'redis';
 
-let redisClient: ReturnType<typeof createClient> | null = null;
+let redisClient: RedisClientType | null = null;
 
 export async function connectRedis({
   url,
@@ -10,7 +10,7 @@ export async function connectRedis({
   url: string;
   username?: string;
   password?: string;
-}) {
+}): Promise<RedisClientType> {
   if (!redisClient) {
     redisClient = createClient({ url, username, password });
     redisClient.on('error', (err) => console.error('Redis Error', err));

@@ -10,11 +10,6 @@ export class AuthController {
   findOne(@Req() request: Request) {
     return {
       user: request.session.user || null,
-      cart: request.session.cart || {
-        items: [],
-        totalQuantity: 0,
-        totalPrice: '0.00',
-      },
     };
   }
 }

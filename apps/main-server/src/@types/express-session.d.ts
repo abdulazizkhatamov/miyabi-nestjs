@@ -6,16 +6,5 @@ declare module 'express-session' {
       id: string;
       email: string;
     };
-    cart: {
-      items: {
-        id: string;
-        name: string;
-        price: string;
-        quantity: number;
-        image?: string;
-      }[];
-      totalQuantity: number;
-      totalPrice: string;
-    };
   }
 }

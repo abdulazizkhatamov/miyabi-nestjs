@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
-import { CsrfModule } from './csrf/csrf.module';
 import { ConfigModule } from '@nestjs/config';
-import { PrismaModule } from '@app/common';
+import { CsrfModule, PrismaModule } from '@app/common';
 import { CategoriesModule } from './categories/categories.module';
 import { ImagesModule } from './images/images.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -25,11 +24,11 @@ import { BannersModule } from './banners/banners.module';
     }),
     PrismaModule,
     AuthModule,
-    CsrfModule,
     CategoriesModule,
     ImagesModule,
     ProductsModule,
     BannersModule,
+    CsrfModule,
   ],
   controllers: [],
   providers: [],

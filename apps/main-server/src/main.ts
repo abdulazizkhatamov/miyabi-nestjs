@@ -12,6 +12,7 @@ import {
   csrfSynchronisedProtection,
   parseBoolean,
 } from '@app/common';
+import { cartIdMiddleware } from './middleware/cart-id.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -50,6 +51,7 @@ async function bootstrap() {
       },
     }),
   );
+  app.use(cartIdMiddleware(redis));
 
   app.enableCors({
     credentials: true,
