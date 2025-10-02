@@ -5,22 +5,18 @@ import { PrismaService } from '@app/common';
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(categoryId: string, cursor?: string, take = 10) {
+  async findAll(categoryId: string, cursor?: string) {
+    console.log('requested');
+
     const products = await this.prisma.product.findMany({
-      where: { category_id: categoryId },
-      take: take + 1, // fetch one extra to check if there’s a next page
+      where: { category_id: categoryId, status: true },
+
       ...(cursor && { cursor: { id: cursor }, skip: 1 }),
       orderBy: { created_at: 'desc' },
       include: { images: true },
     });
 
-    let nextCursor: string | null = null;
-    if (products.length > take) {
-      const nextItem = products.pop();
-      nextCursor = nextItem?.id ?? null; // safe fallback
-    }
-
-    return { products, nextCursor };
+    return { products };
   }
 
   findOne(id: number) {

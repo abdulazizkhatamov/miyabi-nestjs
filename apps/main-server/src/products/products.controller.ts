@@ -9,9 +9,8 @@ export class ProductsController {
   findAll(
     @Query('categoryId') categoryId: string,
     @Query('cursor') cursor?: string, // for cursor-based pagination
-    @Query('take') take = '10', // number of items per page
   ) {
-    return this.productsService.findAll(categoryId, cursor, parseInt(take));
+    return this.productsService.findAll(categoryId, cursor);
   }
 
   @Get(':id')
