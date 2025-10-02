@@ -7,15 +7,11 @@ export class ProductsController {
 
   @Get()
   findAll(
-    @Query('categorySlug') categorySlug?: string,
-    @Query('page') page = '1',
-    @Query('limit') limit = '10',
+    @Query('categoryId') categoryId: string,
+    @Query('cursor') cursor?: string, // for cursor-based pagination
+    @Query('take') take = '10', // number of items per page
   ) {
-    return this.productsService.findAll(
-      categorySlug,
-      Number(page),
-      Number(limit),
-    );
+    return this.productsService.findAll(categoryId, cursor, parseInt(take));
   }
 
   @Get(':id')

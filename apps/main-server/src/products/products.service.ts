@@ -1,36 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@app/common';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(categorySlug?: string, page = 1, limit = 10) {
-    const where: Prisma.ProductWhereInput = { status: true };
+  async findAll(categoryId: string, cursor?: string, take = 10) {
+    const products = await this.prisma.product.findMany({
+      where: { category_id: categoryId },
+      take: take + 1, // fetch one extra to check if there’s a next page
+      ...(cursor && { cursor: { id: cursor }, skip: 1 }),
+      orderBy: { created_at: 'desc' },
+      include: { images: true },
+    });
 
-    if (categorySlug) {
-      where.category = { slug: categorySlug };
+    let nextCursor: string | null = null;
+    if (products.length > take) {
+      const nextItem = products.pop();
+      nextCursor = nextItem?.id ?? null; // safe fallback
     }
 
-    const [items, total] = await Promise.all([
-      this.prisma.product.findMany({
-        where,
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy: { created_at: 'desc' },
-        include: { images: true },
-      }),
-      this.prisma.product.count({ where }),
-    ]);
-
-    return {
-      data: items,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    };
+    return { products, nextCursor };
   }
 
   findOne(id: number) {
