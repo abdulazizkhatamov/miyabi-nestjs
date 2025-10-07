@@ -6,8 +6,6 @@ export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(categoryId: string, cursor?: string) {
-    console.log('requested');
-
     const products = await this.prisma.product.findMany({
       where: { category_id: categoryId, status: true },
 

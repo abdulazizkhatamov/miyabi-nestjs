@@ -1,8 +1,8 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { CartItemDto } from './dto/cart-item.dto';
+import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from '@app/common';
 import type { Request } from 'express';
 import type { RedisClientType } from 'redis';
+import { CartUpdateDto } from './dto/cart-item.dto';
 
 interface Cart {
   items: {
@@ -47,7 +47,11 @@ export class CartService {
    * Persists cart in Redis
    */
   private async saveCart(cartId: string, cart: Cart): Promise<void> {
-    await this.redis.set(this.getCartKey(cartId), JSON.stringify(cart));
+    await this.redis.setEx(
+      this.getCartKey(cartId),
+      60 * 60 * 24 * 30,
+      JSON.stringify(cart),
+    );
   }
 
   /**
@@ -67,64 +71,38 @@ export class CartService {
   /**
    * Adds product to cart or increments quantity if already present.
    */
-  async addToCart(req: Request, cartItemDto: CartItemDto): Promise<Cart> {
-    const { productId, quantity = 1 } = cartItemDto;
+  async updateCart(req: Request, dto: CartUpdateDto): Promise<Cart> {
     if (!req.cartId) throw new Error('cartId missing from request');
 
-    const product = await this.prisma.product.findUnique({
-      where: { id: productId },
-      include: { images: true },
-    });
-    if (!product) {
-      throw new NotFoundException(`Product with id ${productId} not found`);
-    }
-
+    // Load cart
     const cart = await this.loadCart(req.cartId);
 
-    const cartProduct = cart.items.find((item) => item.id === productId);
-    if (cartProduct) {
-      cartProduct.quantity += quantity;
-    } else {
-      cart.items.push({
+    // Fetch all products from DB for validation
+    const productIds = dto.items.map((i) => i.id);
+    const products = await this.prisma.product.findMany({
+      where: { id: { in: productIds } },
+      include: { images: true },
+    });
+
+    // Rebuild cart items
+    const newItems: Cart['items'] = [];
+
+    for (const item of dto.items) {
+      if (item.quantity <= 0) continue;
+
+      const product = products.find((p) => p.id === item.id);
+      if (!product) continue; // silently ignore invalid productIds
+
+      newItems.push({
         id: product.id,
         name: product.name,
         price: product.price.toString(),
-        quantity,
+        quantity: item.quantity,
         image: product.images[0]?.path ?? undefined,
       });
     }
 
-    this.recalculateCart(cart);
-    await this.saveCart(req.cartId, cart);
-
-    return cart;
-  }
-
-  /**
-   * Removes product from cart. If `quantity` is given, decreases it;
-   * if the quantity goes to 0 or below, removes the item entirely.
-   */
-  async removeFromCart(req: Request, cartItemDto: CartItemDto): Promise<Cart> {
-    const { productId, quantity = 1 } = cartItemDto;
-    if (!req.cartId) throw new Error('cartId missing from request');
-
-    const cart = await this.loadCart(req.cartId);
-
-    const index = cart.items.findIndex((item) => item.id === productId);
-    if (index === -1) {
-      throw new NotFoundException(
-        `Product with id ${productId} not found in cart`,
-      );
-    }
-
-    const cartProduct = cart.items[index];
-
-    if (cartProduct.quantity > quantity) {
-      cartProduct.quantity -= quantity;
-    } else {
-      cart.items.splice(index, 1);
-    }
-
+    cart.items = newItems;
     this.recalculateCart(cart);
     await this.saveCart(req.cartId, cart);
 

@@ -1,6 +1,6 @@
 import 'express';
 
-declare module 'express-serve-static-core' {
+declare module 'express' {
   interface Request {
     cartId?: string;
   }

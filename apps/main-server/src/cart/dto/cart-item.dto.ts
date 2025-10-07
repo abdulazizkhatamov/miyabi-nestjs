@@ -1,19 +1,18 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import { IsArray, ValidateNested, IsString, IsInt, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 
-export class CartItemDto {
-  @ApiProperty({
-    description: 'Product unique ID',
-  })
-  @IsNotEmpty()
+export class CartUpdateItemDto {
   @IsString()
-  productId: string;
+  id: string;
 
-  @ApiProperty({
-    description: 'Quantity of product that will be added to cart',
-  })
-  @IsOptional()
   @IsInt()
-  @Min(1)
-  quantity?: number = 1;
+  @Min(0)
+  quantity: number;
+}
+
+export class CartUpdateDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CartUpdateItemDto)
+  items: CartUpdateItemDto[];
 }

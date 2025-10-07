@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
 import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -9,6 +9,7 @@ import { BannersModule } from './banners/banners.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { CartModule } from './cart/cart.module';
+import { CartIdMiddleware } from './middleware/cart.middleware';
 
 @Module({
   imports: [
@@ -34,4 +35,8 @@ import { CartModule } from './cart/cart.module';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(CartIdMiddleware).forRoutes('*');
+  }
+}
