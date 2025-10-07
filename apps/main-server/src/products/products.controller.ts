@@ -13,8 +13,8 @@ export class ProductsController {
     return this.productsService.findAll(categoryId, cursor);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productsService.findOne(+id);
+  @Get(':slug')
+  findOne(@Param('slug') slug: string) {
+    return this.productsService.findOne(slug);
   }
 }
