@@ -13,6 +13,16 @@ export class ProductsController {
     return this.productsService.findAll(categoryId, cursor);
   }
 
+  @Get('search')
+  async search(
+    @Query('q') q: string,
+    @Query('category') category?: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
+  ) {
+    return this.productsService.search(q, category, page, limit);
+  }
+
   @Get(':slug')
   findOne(@Param('slug') slug: string) {
     return this.productsService.findOne(slug);

@@ -1,9 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@app/common';
+import { MeilisearchService, PrismaService } from '@app/common';
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly meilisearchService: MeilisearchService,
+  ) {}
 
   async findAll(categoryId: string, cursor?: string) {
     const products = await this.prisma.product.findMany({
@@ -27,5 +30,24 @@ export class ProductsService {
       return new NotFoundException(`Product with ${slug} slug is not found.`);
 
     return product;
+  }
+
+  async search(
+    q: string,
+    category: string | undefined,
+    page: string,
+    limit: string,
+  ) {
+    // Convert category string to filter object
+    const filters: Record<string, any> | undefined = category
+      ? { category }
+      : undefined;
+
+    return this.meilisearchService.searchProducts(
+      q,
+      filters,
+      parseInt(page, 10),
+      parseInt(limit, 10),
+    );
   }
 }

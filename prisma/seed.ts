@@ -2,10 +2,17 @@ import { PrismaClient, Prisma } from '@prisma/client';
 import * as argon2 from 'argon2';
 import * as dotenv from 'dotenv';
 import { faker } from '@faker-js/faker';
+import { MeiliSearch } from 'meilisearch';
 
 dotenv.config();
 
 const prisma = new PrismaClient();
+
+const meiliClient = new MeiliSearch({
+  host: process.env.MEILISEARCH_URL || 'http://127.0.0.1:7700',
+  apiKey: process.env.MEILI_MASTER_KEY || '',
+});
+const meiliIndex = meiliClient.index('products');
 
 async function main() {
   const email = process.env.SUPER_ADMIN_EMAIL as string;
@@ -17,14 +24,11 @@ async function main() {
     );
   }
 
-  // hash the password with argon2
+  // Hash the password
   const hashedPassword = await argon2.hash(password);
 
-  // check if admin already exists
-  const existingAdmin = await prisma.admin.findUnique({
-    where: { email },
-  });
-
+  // Check if admin exists
+  const existingAdmin = await prisma.admin.findUnique({ where: { email } });
   if (!existingAdmin) {
     await prisma.admin.create({
       data: {
@@ -51,14 +55,9 @@ async function main() {
     updated_at: new Date(),
   }));
 
-  await prisma.category.createMany({
-    data: categories,
-    skipDuplicates: true,
-  });
-
+  await prisma.category.createMany({ data: categories, skipDuplicates: true });
   console.log(`✅ ${categoriesCount} categories created.`);
 
-  // Fetch categories back (for product assignment)
   const dbCategories = await prisma.category.findMany();
 
   // --- Seed Products ---
@@ -82,12 +81,25 @@ async function main() {
     };
   });
 
-  await prisma.product.createMany({
-    data: products,
-    skipDuplicates: true,
-  });
-
+  await prisma.product.createMany({ data: products, skipDuplicates: true });
   console.log(`✅ ${productsCount} products created.`);
+
+  // --- Index products in Meilisearch ---
+  const meiliProducts = await prisma.product.findMany({
+    include: { category: true },
+  });
+  await meiliIndex.addDocuments(
+    meiliProducts.map((p) => ({
+      id: p.id,
+      name: p.name,
+      description: p.description,
+      price: p.price,
+      category: p.category?.name || '',
+      slug: p.slug,
+      status: p.status,
+    })),
+  );
+  console.log(`✅ Indexed ${meiliProducts.length} products in Meilisearch`);
 }
 
 main()
@@ -95,7 +107,6 @@ main()
     console.error(e);
     process.exit(1);
   })
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  .finally(async () => {
-    await prisma.$disconnect();
+  .finally(() => {
+    prisma.$disconnect();
   });

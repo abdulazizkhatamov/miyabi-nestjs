@@ -25,16 +25,11 @@ export class ProductsController {
   @Get()
   findAll(@Query() query: ProductsQueryDto) {
     const { page, pageSize, name, status } = query;
-
-    // normalize to array of booleans
     const statusArray = Array.isArray(status) ? status : status ? [status] : [];
     const parsedStatuses = statusArray.map((s) => s === 'true');
 
     let statusFilter: boolean | undefined;
-    if (parsedStatuses.length === 1) {
-      statusFilter = parsedStatuses[0]; // single true or false
-    }
-    // if both true and false selected → no filter applied (statusFilter stays undefined)
+    if (parsedStatuses.length === 1) statusFilter = parsedStatuses[0];
 
     return this.productsService.findAll({
       page,
@@ -45,6 +40,16 @@ export class ProductsController {
       },
       orderBy: { created_at: 'desc' },
     });
+  }
+
+  @Get('search')
+  search(
+    @Query('q') q: string,
+    @Query('category') category?: string,
+    @Query('page') page = 1,
+    @Query('limit') limit = 20,
+  ) {
+    return this.productsService.search(q, category, +page, +limit);
   }
 
   @Get(':id')
