@@ -17,7 +17,7 @@ import { BannersModule } from './banners/banners.module';
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', '..', '..', 'public'),
-      exclude: ['/api/(.*)'],
+      serveRoot: '/public',
       serveStaticOptions: {
         fallthrough: false,
       },
