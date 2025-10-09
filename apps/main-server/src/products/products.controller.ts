@@ -16,11 +16,10 @@ export class ProductsController {
   @Get('search')
   async search(
     @Query('q') q: string,
-    @Query('category') category?: string,
     @Query('page') page = '1',
     @Query('limit') limit = '20',
   ) {
-    return this.productsService.search(q, category, page, limit);
+    return this.productsService.search(q, page, limit);
   }
 
   @Get(':slug')

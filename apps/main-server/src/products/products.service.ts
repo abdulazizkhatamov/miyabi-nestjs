@@ -30,12 +30,7 @@ export class ProductsService {
     return product;
   }
 
-  async search(
-    q: string,
-    category: string | undefined,
-    page: string,
-    limit: string,
-  ) {
+  async search(q: string, page: string, limit: string) {
     const pageNum = parseInt(page, 10) || 1;
     const limitNum = parseInt(limit, 10) || 20;
 
@@ -54,10 +49,7 @@ export class ProductsService {
 
     // Build main where
     const where: Prisma.ProductWhereInput = {
-      AND: [
-        ...(orConditions.length > 0 ? [{ OR: orConditions }] : []),
-        ...(category ? [{ category: { slug: category } }] : []),
-      ],
+      AND: [...(orConditions.length > 0 ? [{ OR: orConditions }] : [])],
       status: true, // ✅ only active products
     };
 
