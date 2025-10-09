@@ -2,17 +2,10 @@ import { PrismaClient, Prisma } from '@prisma/client';
 import * as argon2 from 'argon2';
 import * as dotenv from 'dotenv';
 import { faker } from '@faker-js/faker';
-import { MeiliSearch } from 'meilisearch';
 
 dotenv.config();
 
 const prisma = new PrismaClient();
-
-const meiliClient = new MeiliSearch({
-  host: process.env.MEILISEARCH_URL || 'http://127.0.0.1:7700',
-  apiKey: process.env.MEILI_MASTER_KEY || '',
-});
-const meiliIndex = meiliClient.index('products');
 
 async function main() {
   const email = process.env.SUPER_ADMIN_EMAIL as string;
@@ -85,21 +78,9 @@ async function main() {
   console.log(`✅ ${productsCount} products created.`);
 
   // --- Index products in Meilisearch ---
-  const meiliProducts = await prisma.product.findMany({
+  await prisma.product.findMany({
     include: { category: true },
   });
-  await meiliIndex.addDocuments(
-    meiliProducts.map((p) => ({
-      id: p.id,
-      name: p.name,
-      description: p.description,
-      price: p.price,
-      category: p.category?.name || '',
-      slug: p.slug,
-      status: p.status,
-    })),
-  );
-  console.log(`✅ Indexed ${meiliProducts.length} products in Meilisearch`);
 }
 
 main()
