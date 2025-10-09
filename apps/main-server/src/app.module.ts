@@ -19,7 +19,7 @@ import { CartIdMiddleware } from './middleware/cart.middleware';
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', '..', '..', 'public'),
-      exclude: ['/api/(.*)'],
+      exclude: ['/api/:path*'],
       serveStaticOptions: {
         fallthrough: false,
       },
