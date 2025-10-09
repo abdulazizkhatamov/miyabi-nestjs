@@ -3,8 +3,6 @@ export * from './prisma/prisma.module';
 export * from './redis/redis.client';
 export * from './redis/redis.provider';
 export * from './redis/redis.module';
-export * from './meilisearch/meilisearch.service';
-export * from './meilisearch/meilisearch.module';
 export * from './csrf/csrf.config';
 export * from './csrf/csrf.module';
 export * from './csrf/csrf.service';

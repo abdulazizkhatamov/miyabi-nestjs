@@ -1,12 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { MeilisearchService, PrismaService } from '@app/common';
+import { PrismaService } from '@app/common';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ProductsService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly meilisearchService: MeilisearchService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async findAll(categoryId: string, cursor?: string) {
     const products = await this.prisma.product.findMany({
@@ -38,16 +36,48 @@ export class ProductsService {
     page: string,
     limit: string,
   ) {
-    // Convert category string to filter object
-    const filters: Record<string, any> | undefined = category
-      ? { category }
-      : undefined;
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 20;
 
-    return this.meilisearchService.searchProducts(
-      q,
-      filters,
-      parseInt(page, 10),
-      parseInt(limit, 10),
-    );
+    // Build OR condition
+    const orConditions: Prisma.ProductWhereInput[] = [];
+    if (q && q.trim() !== '') {
+      orConditions.push(
+        { name: { contains: q, mode: Prisma.QueryMode.insensitive } },
+        {
+          category: {
+            name: { contains: q, mode: Prisma.QueryMode.insensitive },
+          },
+        },
+      );
+    }
+
+    // Build main where
+    const where: Prisma.ProductWhereInput = {
+      AND: [
+        ...(orConditions.length > 0 ? [{ OR: orConditions }] : []),
+        ...(category ? [{ category: { slug: category } }] : []),
+      ],
+      status: true, // ✅ only active products
+    };
+
+    // Fetch products
+    const products = await this.prisma.product.findMany({
+      where,
+      include: { category: true },
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
+    });
+
+    // Count total for pagination
+    const total = await this.prisma.product.count({ where });
+
+    return {
+      items: products,
+      total,
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil(total / limitNum),
+    };
   }
 }

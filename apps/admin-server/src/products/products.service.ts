@@ -1,20 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, Product } from '@prisma/client';
-import {
-  MeilisearchService,
-  PrismaService,
-  generateUniqueSlug,
-} from '@app/common';
+import { PrismaService, generateUniqueSlug } from '@app/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Decimal } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class ProductsService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly meilisearchService: MeilisearchService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateProductDto) {
     const { name, description, weight, price, category_id } = dto;
@@ -31,19 +24,6 @@ export class ProductsService {
       },
       include: { category: true },
     });
-
-    // Index product in Meilisearch
-    await this.meilisearchService.indexProducts([
-      {
-        id: product.id,
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        category: product.category?.name || '',
-        slug: product.slug,
-        status: product.status,
-      },
-    ]);
 
     return product;
   }
@@ -108,19 +88,6 @@ export class ProductsService {
       include: { category: true },
     });
 
-    // Update index in Meilisearch
-    await this.meilisearchService.indexProducts([
-      {
-        id: updated.id,
-        name: updated.name,
-        description: updated.description,
-        price: updated.price,
-        category: updated.category?.name || '',
-        slug: updated.slug,
-        status: updated.status,
-      },
-    ]);
-
     return updated;
   }
 
@@ -131,15 +98,34 @@ export class ProductsService {
 
     await this.prisma.product.delete({ where: { id } });
 
-    // Remove from Meilisearch index
-    await this.meilisearchService.deleteProduct(id);
-
     return { message: `Product with ID ${id} deleted successfully` };
   }
 
   /** Search products (for main-server) */
   async search(term: string, category?: string, page = 1, limit = 20) {
-    const filters = category ? { category } : {};
-    return this.meilisearchService.searchProducts(term, filters, page, limit);
+    return this.prisma.product.findMany({
+      where: {
+        AND: [
+          {
+            OR: [
+              { name: { contains: term, mode: 'insensitive' } },
+              { category: { name: { contains: term, mode: 'insensitive' } } },
+            ],
+          },
+          category
+            ? {
+                category: {
+                  slug: category, // ✅ match by category slug (you can switch to name if needed)
+                },
+              }
+            : {},
+        ],
+      },
+      include: {
+        category: true, // so you can access product.category.name in frontend
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
   }
 }
