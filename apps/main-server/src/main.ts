@@ -7,11 +7,8 @@ import session from 'express-session';
 import { RedisStore } from 'connect-redis';
 
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import {
-  connectRedis,
-  csrfSynchronisedProtection,
-  parseBoolean,
-} from '@app/common';
+import { connectRedis, parseBoolean } from '@app/common';
+import { csrfSynchronisedProtection } from './libs/csrf-sync';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

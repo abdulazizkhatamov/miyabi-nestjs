@@ -1,6 +1,6 @@
-import { generateToken } from '@app/common';
 import { Injectable } from '@nestjs/common';
 import { Request } from 'express';
+import { generateToken } from '../libs/csrf-sync';
 
 @Injectable()
 export class CsrfService {
