@@ -3,7 +3,6 @@ export * from './prisma/prisma.module';
 export * from './redis/redis.client';
 export * from './redis/redis.provider';
 export * from './redis/redis.module';
-export * from './csrf/csrf.config';
 export * from '../../../apps/admin-server/src/csrf/csrf.module';
 export * from '../../../apps/admin-server/src/csrf/csrf.service';
 export * from './utils/parser.util';
