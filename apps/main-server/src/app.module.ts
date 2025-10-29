@@ -26,7 +26,7 @@ import { CartIdMiddleware } from './middleware/cart.middleware';
     }),
     PrismaModule,
     RedisModule,
-    // CsrfModule,
+    CsrfModule,
     AuthModule,
     CartModule,
     BannersModule,

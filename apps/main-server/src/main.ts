@@ -48,7 +48,7 @@ async function bootstrap() {
       saveUninitialized: false,
       store: new RedisStore({
         client: redis,
-        prefix: config.get<string>('SESSION_FOLDER') ?? 'sess:',
+        prefix: config.get<string>('SESSION_FOLDER') ?? 'client_session:',
       }),
       cookie: {
         maxAge: Number(config.getOrThrow<string>('SESSION_MAX_AGE')),
