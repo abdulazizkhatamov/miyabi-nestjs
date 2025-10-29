@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AdminServerModule } from './../src/admin-server.module';
+import { AdminServerModule } from '../src/app.module';
 
 describe('AdminServerController (e2e)', () => {
   let app: INestApplication;

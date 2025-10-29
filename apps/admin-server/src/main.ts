@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { AdminServerModule } from './admin-server.module';
+import { AdminServerModule } from './app.module';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import { ConfigService } from '@nestjs/config';
