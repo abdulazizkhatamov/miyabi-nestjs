@@ -13,17 +13,34 @@ async function bootstrap() {
   const config = app.get(ConfigService);
   const port = Number(config.getOrThrow<string>('ADMIN_SERVER_PORT'));
 
+  // ✅ 1. Enable CORS before session
+  app.enableCors({
+    credentials: true,
+    origin: config.getOrThrow<string>('ALLOWED_ORIGIN').split(', '),
+    allowedHeaders: [
+      'Content-Type',
+      'Origin',
+      'Accept',
+      'Authorization',
+      'x-csrf-token',
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    exposedHeaders: ['Set-Cookie'],
+  });
+
+  // ✅ 2. Setup basic app configuration
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.setGlobalPrefix('api');
   app.use(cookieParser());
 
-  // Sessions (unchanged)
+  // ✅ 3. Connect to Redis for session storage
   const redis = await connectRedis({
     url: config.getOrThrow<string>('REDIS_URL'),
     username: config.get<string>('REDIS_USERNAME'),
     password: config.get<string>('REDIS_PASSWORD'),
   });
 
+  // ✅ 4. Session configuration
   app.use(
     session({
       secret: config.getOrThrow<string>('SESSION_SECRET'),
@@ -42,39 +59,25 @@ async function bootstrap() {
           | 'lax'
           | 'strict'
           | 'none',
-        domain: config.getOrThrow<string>('SESSION_DOMAIN'),
+        // ❌ Remove this line – Render and Vercel are separate domains
+        // domain: config.getOrThrow<string>('SESSION_DOMAIN'),
       },
     }),
   );
 
-  app.enableCors({
-    credentials: true,
-    exposedHeaders: ['Set-Cookie'],
-    origin: config.getOrThrow<string>('ALLOWED_ORIGIN').split(', '),
-    allowedHeaders: [
-      'Content-Type',
-      'Origin',
-      'Accept',
-      'Authorization',
-      'x-csrf-token',
-    ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  });
-
+  // ✅ 5. Swagger docs
   const documentConfig = new DocumentBuilder()
-    .setTitle('Miyabi House Admin Api')
-    .setDescription(
-      'The starting Nest JS project API description for Miyabi House Admin',
-    )
+    .setTitle('Miyabi House Admin API')
+    .setDescription('NestJS API for Miyabi House Admin Panel')
     .setVersion('1.0')
     .build();
+
   const documentFactory = () =>
     SwaggerModule.createDocument(app, documentConfig);
   SwaggerModule.setup('api', app, documentFactory);
 
-  // ⬇️ Attach Redis microservice (Transport.REDIS)
-  // You can use `url` (preferred) or host/port. URL example: redis://:password@localhost:6379
-
+  // ✅ 6. Start server
   await app.listen(port ?? 3001);
 }
+
 bootstrap();

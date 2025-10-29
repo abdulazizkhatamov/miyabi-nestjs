@@ -5,7 +5,6 @@ import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import { RedisStore } from 'connect-redis';
-
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { connectRedis, parseBoolean } from '@app/common';
 
@@ -14,11 +13,27 @@ async function bootstrap() {
   const config = app.get(ConfigService);
   const port = Number(config.getOrThrow<string>('MAIN_SERVER_PORT'));
 
+  // ✅ 1. CORS must come before session
+  app.enableCors({
+    credentials: true,
+    origin: config.getOrThrow<string>('ALLOWED_ORIGIN').split(', '),
+    allowedHeaders: [
+      'Content-Type',
+      'Origin',
+      'Accept',
+      'Authorization',
+      'x-csrf-token',
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    exposedHeaders: ['Set-Cookie'],
+  });
+
+  // ✅ 2. Other setup
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.setGlobalPrefix('api');
   app.use(cookieParser());
 
-  // Sessions (unchanged)
+  // ✅ 3. Redis + Session
   const redis = await connectRedis({
     url: config.getOrThrow<string>('REDIS_URL'),
     username: config.get<string>('REDIS_USERNAME'),
@@ -43,38 +58,22 @@ async function bootstrap() {
           | 'lax'
           | 'strict'
           | 'none',
-        domain: config.getOrThrow<string>('SESSION_DOMAIN'),
+        // ❌ remove domain for cross-origin cookies
+        // domain: config.getOrThrow<string>('SESSION_DOMAIN'),
       },
     }),
   );
 
-  app.enableCors({
-    credentials: true,
-    exposedHeaders: ['Set-Cookie'],
-    origin: config.getOrThrow<string>('ALLOWED_ORIGIN').split(', '),
-    allowedHeaders: [
-      'Content-Type',
-      'Origin',
-      'Accept',
-      'Authorization',
-      'x-csrf-token',
-    ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  });
-
+  // ✅ 4. Swagger
   const documentConfig = new DocumentBuilder()
     .setTitle('Miyabi House Api')
-    .setDescription(
-      'The starting Nest JS project API description for Miyabi House',
-    )
+    .setDescription('Miyabi House API')
     .setVersion('1.0')
     .build();
+
   const documentFactory = () =>
     SwaggerModule.createDocument(app, documentConfig);
   SwaggerModule.setup('api', app, documentFactory);
-
-  // ⬇️ Attach Redis microservice (Transport.REDIS)
-  // You can use `url` (preferred) or host/port. URL example: redis://:password@localhost:6379
 
   await app.listen(port ?? 3000);
 }
