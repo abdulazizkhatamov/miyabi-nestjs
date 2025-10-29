@@ -7,7 +7,6 @@ import { ValidationPipe } from '@nestjs/common';
 import { RedisStore } from 'connect-redis';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { connectRedis, parseBoolean } from '@app/common';
-import { csrfSynchronisedProtection } from './libs/csrf-sync';
 
 async function bootstrap() {
   const app = await NestFactory.create(AdminServerModule);
@@ -60,8 +59,6 @@ async function bootstrap() {
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   });
-
-  app.use(csrfSynchronisedProtection);
 
   const documentConfig = new DocumentBuilder()
     .setTitle('Miyabi House Admin Api')

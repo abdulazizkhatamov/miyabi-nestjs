@@ -1,10 +1,21 @@
-// libs/common/src/redis/redis.module.ts
 import { Global, Module } from '@nestjs/common';
-import { RedisProvider } from './redis.provider';
+import Redis from 'ioredis';
 
-@Global() // make it available everywhere
+@Global()
 @Module({
-  providers: [RedisProvider],
+  providers: [
+    {
+      provide: 'REDIS_CLIENT',
+      useFactory: () => {
+        const client = new Redis({
+          host: process.env.REDIS_HOST || 'localhost',
+          port: parseInt(process.env.REDIS_PORT || '6379', 10),
+        });
+        client.on('error', (err) => console.error('Redis Error:', err));
+        return client;
+      },
+    },
+  ],
   exports: ['REDIS_CLIENT'],
 })
 export class RedisModule {}
