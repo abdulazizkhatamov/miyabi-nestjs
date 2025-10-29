@@ -46,21 +46,19 @@ async function bootstrap() {
       secret: config.getOrThrow<string>('SESSION_SECRET'),
       name: config.getOrThrow<string>('SESSION_NAME'),
       resave: false,
-      saveUninitialized: false,
+      // ✅ must be true if you want to issue session cookie before any writes
+      saveUninitialized: true,
       store: new RedisStore({
         client: redis,
-        prefix: config.get<string>('SESSION_FOLDER') ?? 'sess:',
+        prefix: config.get<string>('SESSION_FOLDER') ?? 'admin_session:',
       }),
       cookie: {
         maxAge: Number(config.getOrThrow<string>('SESSION_MAX_AGE')),
-        httpOnly: parseBoolean(config.getOrThrow<string>('SESSION_HTTP_ONLY')),
-        secure: parseBoolean(config.getOrThrow<string>('SESSION_SECURE')),
-        sameSite: config.getOrThrow<string>('SESSION_SAME_SITE') as
-          | 'lax'
-          | 'strict'
-          | 'none',
-        // ❌ Remove this line – Render and Vercel are separate domains
-        // domain: config.getOrThrow<string>('SESSION_DOMAIN'),
+        httpOnly: true,
+        // ✅ only secure in production (HTTPS)
+        secure: process.env.NODE_ENV === 'production',
+        // ✅ allow cross-origin
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       },
     }),
   );
