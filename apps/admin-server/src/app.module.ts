@@ -24,7 +24,7 @@ import { BannersModule } from './banners/banners.module';
     }),
     PrismaModule,
     RedisModule,
-    CsrfModule,
+    // CsrfModule,
     AuthModule,
     CategoriesModule,
     ImagesModule,
