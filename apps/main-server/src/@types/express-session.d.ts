@@ -6,5 +6,6 @@ declare module 'express-session' {
       id: string;
       email: string;
     };
+    csrfSecret: string;
   }
 }
