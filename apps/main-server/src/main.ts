@@ -40,6 +40,8 @@ async function bootstrap() {
     password: config.get<string>('REDIS_PASSWORD'),
   });
 
+  const isProduction = config.get<string>('NODE_ENV') === 'production';
+
   app.use(
     session({
       secret: config.getOrThrow<string>('SESSION_SECRET'),
@@ -55,9 +57,9 @@ async function bootstrap() {
         maxAge: Number(config.getOrThrow<string>('SESSION_MAX_AGE')),
         httpOnly: true,
         // ✅ only secure in production (HTTPS)
-        secure: process.env.NODE_ENV === 'production',
+        secure: isProduction,
         // ✅ allow cross-origin
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        sameSite: isProduction ? 'none' : 'lax',
       },
     }),
   );
