@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { RedisStore } from 'connect-redis';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { connectRedis, parseBoolean } from '@app/common';
+import { connectRedis } from '@app/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AdminServerModule);

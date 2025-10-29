@@ -6,5 +6,4 @@ export * from './redis/redis.module';
 export * from './csrf/csrf.module';
 export * from './csrf/csrf.middleware';
 export * from './csrf/csrf.controller';
-export * from './utils/parser.util';
 export * from './utils/slug.util';

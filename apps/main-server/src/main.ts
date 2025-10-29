@@ -6,7 +6,7 @@ import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import { RedisStore } from 'connect-redis';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { connectRedis, parseBoolean } from '@app/common';
+import { connectRedis } from '@app/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
