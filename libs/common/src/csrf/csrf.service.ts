@@ -1,13 +1,10 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { Request } from 'express';
-import type Redis from 'ioredis';
 import * as crypto from 'crypto';
 import { generateToken } from './csrf-sync';
 
 @Injectable()
 export class CsrfService {
-  constructor(@Inject('REDIS_CLIENT') private readonly redisClient: Redis) {}
-
   async generateCsrfToken(req: Request): Promise<{ token: string }> {
     const sessionId = req.sessionID;
     const session = req.session;

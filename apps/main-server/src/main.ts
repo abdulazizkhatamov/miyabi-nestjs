@@ -20,7 +20,7 @@ async function bootstrap() {
 
   // Sessions (unchanged)
   const redis = await connectRedis({
-    url: config.getOrThrow<string>('REDIS_URI'),
+    url: config.getOrThrow<string>('REDIS_URL'),
     username: config.get<string>('REDIS_USERNAME'),
     password: config.get<string>('REDIS_PASSWORD'),
   });
