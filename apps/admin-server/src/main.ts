@@ -42,6 +42,7 @@ async function bootstrap() {
           | 'lax'
           | 'strict'
           | 'none',
+        domain: config.getOrThrow<string>('SESSION_DOMAIN'),
       },
     }),
   );
