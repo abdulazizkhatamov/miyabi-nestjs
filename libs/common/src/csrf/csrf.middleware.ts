@@ -1,12 +1,11 @@
 // libs/common/src/csrf/csrf.middleware.ts
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { csrfSynchronisedProtection } from './csrf-sync'; // ✅ no invalidCsrfTokenError import
+import { csrfSynchronisedProtection } from './csrf-sync';
 import type { Request, Response, NextFunction } from 'express';
 
 @Injectable()
 export class CsrfMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction): void {
-    // Only protect mutating requests
     if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
       csrfSynchronisedProtection(req, res, (err?: any) => {
         if (err) {
