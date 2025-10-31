@@ -8,8 +8,8 @@ export class CsrfController {
   constructor(private readonly csrfService: CsrfService) {}
 
   @Get()
-  async getCsrfToken(@Req() req: Request) {
-    const { token } = await this.csrfService.generateCsrfToken(req);
+  getCsrfToken(@Req() req: Request) {
+    const { token } = this.csrfService.generateCsrfToken(req);
     return { token };
   }
 }
