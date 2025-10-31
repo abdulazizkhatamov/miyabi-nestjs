@@ -19,7 +19,7 @@ async function bootstrap() {
 
   // ✅ 1. CORS must come before session
   app.enableCors({
-    origin: [config.getOrThrow<string>('ALLOWED_ORIGIN')],
+    origin: config.getOrThrow<string>('ALLOWED_ORIGIN').split(','),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [
