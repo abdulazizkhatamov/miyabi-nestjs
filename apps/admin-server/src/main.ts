@@ -53,7 +53,7 @@ async function bootstrap() {
       name: config.getOrThrow<string>('SESSION_NAME'),
       resave: false,
       // ✅ must be true if you want to issue session cookie before any writes
-      saveUninitialized: true,
+      saveUninitialized: false,
       store: new RedisStore({
         client: redis,
         prefix: config.get<string>('SESSION_FOLDER') ?? 'admin_session:',
