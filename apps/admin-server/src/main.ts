@@ -15,8 +15,9 @@ async function bootstrap() {
 
   // ✅ 1. Enable CORS before session
   app.enableCors({
+    origin: [config.getOrThrow<string>('ALLOWED_ORIGIN')],
     credentials: true,
-    origin: config.getOrThrow<string>('ALLOWED_ORIGIN'),
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [
       'Content-Type',
       'Origin',
@@ -24,7 +25,6 @@ async function bootstrap() {
       'Authorization',
       'x-csrf-token',
     ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     exposedHeaders: ['Set-Cookie'],
   });
 

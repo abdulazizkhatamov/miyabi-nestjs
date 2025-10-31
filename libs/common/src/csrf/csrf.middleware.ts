@@ -9,12 +9,7 @@ export class CsrfMiddleware implements NestMiddleware {
     if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
       csrfSynchronisedProtection(req, res, (err?: any) => {
         if (err) {
-          res.status(403).json({
-            message: 'Invalid CSRF token',
-            statusCode: 403,
-            error: 'Forbidden',
-          });
-          return;
+          return res.status(403).json({ message: 'Invalid CSRF token' });
         }
         next();
       });
