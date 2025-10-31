@@ -7,11 +7,15 @@ import { ValidationPipe } from '@nestjs/common';
 import { RedisStore } from 'connect-redis';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { connectRedis } from '@app/common';
+import type { Express } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AdminServerModule);
   const config = app.get(ConfigService);
   const port = Number(config.getOrThrow<string>('ADMIN_SERVER_PORT'));
+
+  const expressApp = app.getHttpAdapter().getInstance() as Express;
+  expressApp.set('trust proxy', 1);
 
   // ✅ 1. Enable CORS before session
   app.enableCors({

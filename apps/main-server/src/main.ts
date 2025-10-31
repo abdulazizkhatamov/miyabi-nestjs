@@ -7,11 +7,15 @@ import session from 'express-session';
 import { RedisStore } from 'connect-redis';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { connectRedis } from '@app/common';
+import type { Express } from 'express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { rawBody: true });
   const config = app.get(ConfigService);
   const port = Number(config.getOrThrow<string>('MAIN_SERVER_PORT'));
+
+  const expressApp = app.getHttpAdapter().getInstance() as Express;
+  expressApp.set('trust proxy', 1);
 
   // ✅ 1. CORS must come before session
   app.enableCors({
