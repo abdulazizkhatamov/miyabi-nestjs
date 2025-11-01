@@ -25,7 +25,7 @@ export class ImagesService {
     const baseUrl =
       this.configService.get<string>('ADMIN_SERVER_URL') ??
       'http://localhost:3001';
-    const filePath = `${baseUrl}/uploads/${image.filename}`;
+    const filePath = `${baseUrl}/public/uploads/${image.filename}`;
 
     switch (type) {
       case ImageType.category: {
